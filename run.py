@@ -64,6 +64,7 @@ while running:
         enemie.update(player.rect.y, player.ySpeed, player)
     enemiesGroup.draw(screen)
 
+    pygame.draw.rect(screen, (255, 0, 0), (17, 15.5, 161.5 * player.life / 100, 30))
     lifebarGroup.draw(screen)
 
     # Exibe a mensagem inicial antes do jogo começar, após desenhar o fundo
