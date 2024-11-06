@@ -13,6 +13,11 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 hitSound = pygame.mixer.Sound('song/hitSound.wav')
 
+# Carregar o Game Over
+game_over_image = pygame.image.load('assets/gameOver.png')
+game_over_image = pygame.transform.scale(game_over_image, (400,390))
+gameOverSound = pygame.mixer.Sound('song/gameOver1.wav')
+
 # Grupos de sprites
 allSprites = pygame.sprite.Group()
 floorGroup = pygame.sprite.Group()
@@ -40,13 +45,28 @@ createEnemies(enemiesGroup)
 mostrar_frase = True
 inicio_jogo = False
 musica_de_fundo_tocando = False
+morreu = False  # Variável de controle para detectar a morte do jogador
 
 # Loop principal do jogo
 running = True
 while running:
-
     clock.tick(FPS)
     screen.fill((0, 0, 0))
+
+    # Exibe imagem de Game Over se o jogador morreu
+    if morreu:
+        backgroundGroup.draw(screen)
+        screen.blit(game_over_image, (90, 240))
+        pygame.display.flip()
+        gameOverSound.play()
+        
+        # Espera até que o jogador pressione uma tecla para sair
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                running = False
+        continue
 
     # Atualiza e desenha os elementos de fundo na tela
     for background in backgroundGroup:
@@ -67,7 +87,7 @@ while running:
     pygame.draw.rect(screen, (255, 0, 0), (17, 15.5, 161.5 * player.life / 100, 30))
     lifebarGroup.draw(screen)
 
-    # Exibe a mensagem inicial antes do jogo começar, após desenhar o fundo
+    # Exibe a mensagem inicial antes do jogo começar
     if mostrar_frase:
         fonte = pygame.font.SysFont('arial', 40, True, False)
         mensagem = 'press enter'
@@ -100,6 +120,11 @@ while running:
 
     # Só processa ações do jogador se o jogo começou (Enter foi pressionado)
     if inicio_jogo:
+        # Verifica se o jogador morreu
+        if player.currentStatus == 'death':
+            morreu = True
+            continue  # Pula a atualização do jogo e exibe a tela de Game Over
+
         # Verifica colisões com inimigos
         playerCollidesWithEnemies = pygame.sprite.spritecollide(player, enemiesGroup, False)
         for enemie in playerCollidesWithEnemies:
@@ -127,6 +152,9 @@ while running:
 
         if key[pygame.K_SPACE] and not player.currentStatus == 'death':
             player.jump()
+
+        if key[pygame.K_t]:
+            morreu = True
 
     # Eventos (teclas e fechamento do jogo)
     for event in pygame.event.get():
